@@ -139,6 +139,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AnimationObject.h" />
+    <ClInclude Include="Keyframes.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AnimationObject.cpp" />
+    <ClCompile Include="Keyframes.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
