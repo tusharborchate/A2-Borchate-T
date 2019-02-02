@@ -140,13 +140,51 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AnimationObject.h" />
+    <ClInclude Include="freeglut.h" />
+    <ClInclude Include="freeglut_ext.h" />
+    <ClInclude Include="freeglut_std.h" />
+    <ClInclude Include="Getglut.h" />
+    <ClInclude Include="glut.h" />
     <ClInclude Include="Keyframes.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="ObjLibrary\DisplayList.h" />
+    <ClInclude Include="ObjLibrary\Material.h" />
+    <ClInclude Include="ObjLibrary\MtlLibrary.h" />
+    <ClInclude Include="ObjLibrary\MtlLibraryManager.h" />
+    <ClInclude Include="ObjLibrary\ObjModel.h" />
+    <ClInclude Include="ObjLibrary\ObjSettings.h" />
+    <ClInclude Include="ObjLibrary\ObjStringParsing.h" />
+    <ClInclude Include="ObjLibrary\SpriteFont.h" />
+    <ClInclude Include="ObjLibrary\Texture.h" />
+    <ClInclude Include="ObjLibrary\TextureBmp.h" />
+    <ClInclude Include="ObjLibrary\TextureManager.h" />
+    <ClInclude Include="ObjLibrary\Vector2.h" />
+    <ClInclude Include="ObjLibrary\Vector3.h" />
+    <ClInclude Include="Sleep.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnimationObject.cpp" />
     <ClCompile Include="Keyframes.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ObjLibrary\DisplayList.cpp" />
+    <ClCompile Include="ObjLibrary\Material.cpp" />
+    <ClCompile Include="ObjLibrary\MtlLibrary.cpp" />
+    <ClCompile Include="ObjLibrary\MtlLibraryManager.cpp" />
+    <ClCompile Include="ObjLibrary\ObjModel.cpp" />
+    <ClCompile Include="ObjLibrary\ObjStringParsing.cpp" />
+    <ClCompile Include="ObjLibrary\SpriteFont.cpp" />
+    <ClCompile Include="ObjLibrary\Texture.cpp" />
+    <ClCompile Include="ObjLibrary\TextureBmp.cpp" />
+    <ClCompile Include="ObjLibrary\TextureManager.cpp" />
+    <ClCompile Include="ObjLibrary\Vector2.cpp" />
+    <ClCompile Include="ObjLibrary\Vector3.cpp" />
+    <ClCompile Include="Sleep.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="freeglut.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="freeglut.dll" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

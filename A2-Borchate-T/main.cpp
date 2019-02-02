@@ -8,18 +8,41 @@
 #include <sstream>  
 #include <vector>
 #include <string>
+#include <cmath>
+
+#include <cassert>
+#include "glut.h"
+#include "Sleep.h"
+#include  "ObjLibrary\ObjModel.h"
+#include "ObjLibrary/DisplayList.h"
 #include "AnimationObject.h"
 
 //using namespace
 using namespace std;
+using namespace ObjLibrary;
 
 //global variables
 int objectCount = -1;
 AnimationObject animationObjectList[200];
 string fileName;
 int largest = 0;
+double translateX = 0;
+double translateY = 0;
+double translateZ = 0;
+int frames = 0;
+
+ObjModel spiky;
+ObjModel firebucket;
+DisplayList bucketlist;
 
 //prototype
+void init();
+void initDisplay();
+void keyboard(unsigned char key, int x, int y);
+void update();
+void reshape(int w, int h);
+void display();
+
 void GetInputFile();
 void to_lower(string &s);
 void ProcessFile(string line);
@@ -32,7 +55,7 @@ void LinearInterpolation();
 double LinearInterpolationProcess(int keyframestart, int keyframelast, double a1, double a2, double a3);
 
 //main
-void main(int argc, char* argv[])
+void Process()
 {
 	string line;
 	GetInputFile();
@@ -45,7 +68,7 @@ void main(int argc, char* argv[])
 		{
 			try
 			{
-			ProcessFile(line);
+				ProcessFile(line);
 			}
 			catch (const std::exception&)
 			{
@@ -56,14 +79,14 @@ void main(int argc, char* argv[])
 
 		try
 		{
-		LinearInterpolation();
+			LinearInterpolation();
 		}
 		catch (const std::exception&)
 		{
 			cout << "Error while linear interpolation";
 		}
 	}
-	else cout << "Unable to open file";	
+	else cout << "Unable to open file";
 	DisplayValueEachObject();
 
 }
@@ -257,6 +280,15 @@ void LinearInterpolation()
 						k.frame_Number = framecount + 1;
 						k.objectId = animationObjectList[i].objectId;
 						k.posX = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, posx, nextposx, framecount + 1);
+						k.posY = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, it->posY, next->posY, framecount + 1);
+						k.posZ = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, it->posZ, next->posZ, framecount + 1);
+						k.scaleX = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, it->scaleX, next->scaleX, framecount + 1);
+						k.scaleY = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, it->scaleY, next->scaleY, framecount + 1);
+						k.scaleZ = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, it->scaleZ, next->scaleZ, framecount + 1);
+						k.rotX = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, it->rotX, next->rotX, framecount + 1);
+						k.rotY = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, it->rotY, next->rotY, framecount + 1);
+						k.rotZ = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, it->rotZ, next->rotZ, framecount + 1);
+
 						animationObjectList[i].keyFrames.push_back(k);
 						framecount = framecount + 1;
 					}
@@ -275,6 +307,9 @@ double LinearInterpolationProcess(int keyframestart, int keyframelast, double a1
 {
 	try {
 		double result = keyframestart + (((keyframelast - keyframestart) / (a2 - a1))*(a3 - a1));
+		if (!std::isfinite(result)) {
+			return 0;
+		}
 		return result;
 	}
 	catch (exception) {
@@ -304,4 +339,149 @@ void DisplayValueEachObject()
 	}
 
 	cout << largest;
+}
+
+
+
+int main(int argc, char* argv[])
+{
+	Process();
+	glutInitWindowSize(1024, 768);
+	glutInitWindowPosition(0, 0);
+
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGB);
+	glutCreateWindow("Loading OBJ Models");
+	glutKeyboardFunc(keyboard);
+	glutIdleFunc(update);
+	glutReshapeFunc(reshape);
+	glutDisplayFunc(display);
+
+	init();
+
+	glutMainLoop();
+
+	return 1;
+}
+
+void init()
+{
+	spiky.load(animationObjectList[0].objectName);
+	firebucket.load("firebucket.obj");
+	bucketlist = firebucket.getDisplayList();
+	initDisplay();
+}
+
+void initDisplay()
+{
+	glClearColor(0.5, 0.5, 0.5, 0.0);
+	glColor3f(0.0, 0.0, 0.0);
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+
+	glutPostRedisplay();
+}
+
+void keyboard(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case 27: // on [ESC]
+		exit(0); // normal exit
+		break;
+	}
+}
+
+void update()
+{
+	// update your variables here
+	frames = frames + 1;
+	sleep(1.0 / 60.0);
+	glutPostRedisplay();
+}
+
+void reshape(int w, int h)
+{
+	glViewport(0, 0, w, h);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(60.0, (GLdouble)w / (GLdouble)h, 0.1, 1000.0);
+	glMatrixMode(GL_MODELVIEW);
+
+	glutPostRedisplay();
+}
+
+void display()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+	glLoadIdentity();
+
+	// display positive X, Y, and Z axes near origin
+	glBegin(GL_LINES);
+	glColor3d(1.0, 0.0, 0.0);
+	glVertex3d(0.0, 0.0, 0.0);
+	glVertex3d(2.0, 0.0, 0.0);
+	glColor3d(0.0, 1.0, 0.0);
+	glVertex3d(0.0, 0.0, 0.0);
+	glVertex3d(0.0, 2.0, 0.0);
+	glColor3d(0.0, 0.0, 1.0);
+	glVertex3d(0.0, 0.0, 0.0);
+	glVertex3d(0.0, 0.0, 2.0);
+	glEnd();
+
+	// draw a purple wireframe cube
+	glColor3d(1.0, 0.0, 1.0);
+
+	glPushMatrix();
+	glTranslated(0.0, 0.0, 0.0);
+	glRotated(45, 0.0, 1.0, 0.0);
+	glScaled(1.0, 1.0, 1.0);
+	glutWireCube(1.0);
+	glPopMatrix();
+
+	if (frames < animationObjectList[0].keyFrames.size())
+	{
+		// Create iterator pointing to first element
+		std::list<Keyframes>::iterator it;
+		it = animationObjectList[0].keyFrames.begin();
+		// Advance the iterator by 2 positions,
+		std::advance(it, frames);
+
+		for (size_t i = 0; i < 1; i++)
+		{
+			glPushMatrix();
+			gluLookAt(7,50,0,
+				(it->posX) / 2, (it->posY) / 2, (it->posZ) / 2,
+				0.0, 1.0, 0.0);
+
+					//	glScaled(it->scaleX, it->scaleY, it->scaleZ);
+
+			/*glRotated(it->posZ, 0, 0, 1);
+
+			glRotated(it->posY, 0, 1, 0);
+
+			glRotated(it->posX, 1, 0, 0);  */         
+			glTranslated(it->posX, it->posY, it->posZ);
+
+			spiky.draw();
+			glPopMatrix();
+		}
+	}
+	for (size_t i = 0; i < 50; i++)
+	{
+		glPushMatrix();
+		glTranslated(-1.0 - i, 0.0, 0.0);
+		glScaled(0.005, 0.005, 0.005);
+
+		bucketlist.draw();
+		glPopMatrix();
+	}
+
+
+	glPopMatrix();
+	glutSwapBuffers();
 }
