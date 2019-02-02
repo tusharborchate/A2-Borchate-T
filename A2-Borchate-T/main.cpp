@@ -17,6 +17,7 @@ using namespace std;
 int objectCount = -1;
 AnimationObject animationObjectList[200];
 string fileName;
+int largest = 0;
 
 //prototype
 void GetInputFile();
@@ -42,14 +43,29 @@ void main(int argc, char* argv[])
 	{
 		while (getline(myfile, line))
 		{
+			try
+			{
 			ProcessFile(line);
+			}
+			catch (const std::exception&)
+			{
+				cout << "Error while processing file";
+			}
 		}
 		myfile.close();
 
+		try
+		{
 		LinearInterpolation();
-		DisplayValueEachObject();
+		}
+		catch (const std::exception&)
+		{
+			cout << "Error while linear interpolation";
+		}
 	}
-	else cout << "Unable to open file";
+	else cout << "Unable to open file";	
+	DisplayValueEachObject();
+
 }
 
 //get file path as input
@@ -93,6 +109,10 @@ void ProcessFile(string line)
 			count = count + 1;
 		}
 		k.frame_Number = stoi(sep[count]);
+		if (k.frame_Number > largest)
+		{
+			largest = k.frame_Number;
+		}
 		count = count + 1;
 		while (sep[count] == "")
 		{
@@ -213,13 +233,13 @@ void LinearInterpolation()
 
 				std::list<Keyframes>::iterator iter = animationObjectList[i].keyFrames.end();
 				std::advance(iter, -1);
-			    framenumber = iter->frame_Number;
+				framenumber = iter->frame_Number;
 			}
-			
-			count = count + 1;	
+
+			count = count + 1;
 			int currentFrameNumber = it->frame_Number;
 
-			if (currentFrameNumber !=framenumber)
+			if (currentFrameNumber != framenumber)
 			{
 
 				auto next = std::next(it, 1);
@@ -236,7 +256,7 @@ void LinearInterpolation()
 						Keyframes k;
 						k.frame_Number = framecount + 1;
 						k.objectId = animationObjectList[i].objectId;
-						k.posX = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, posx, nextposx, framecount+1);
+						k.posX = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, posx, nextposx, framecount + 1);
 						animationObjectList[i].keyFrames.push_back(k);
 						framecount = framecount + 1;
 					}
@@ -253,8 +273,14 @@ void LinearInterpolation()
 
 double LinearInterpolationProcess(int keyframestart, int keyframelast, double a1, double a2, double a3)
 {
-	double result = keyframestart + (((keyframelast - keyframestart) / (a2 - a1))*(a3 - a1));
-	return result;
+	try {
+		double result = keyframestart + (((keyframelast - keyframestart) / (a2 - a1))*(a3 - a1));
+		return result;
+	}
+	catch (exception) {
+		return 0;
+	}
+
 }
 
 //display values as per object
@@ -266,10 +292,16 @@ void DisplayValueEachObject()
 	{
 		cout << "Object ID" << animationObjectList[i].objectId;
 		cout << "Object Name" << animationObjectList[i].objectName;
+		(animationObjectList[i].keyFrames).sort(keyframe_compare);
 		for (it = animationObjectList[i].keyFrames.begin(); it != animationObjectList[i].keyFrames.end(); ++it)
 		{
 			cout << '\n';
 			cout << "keyframe number" << it->frame_Number;
+			cout << '\n';
+			cout << "pos X" << it->posX;
+
 		}
 	}
+
+	cout << largest;
 }
