@@ -1,6 +1,9 @@
 #pragma once
 class Keyframes
 {
+	
+	
+public:
 	int objectId;
 	int frame_Number;
 	double posX;
@@ -12,9 +15,8 @@ class Keyframes
 	double scaleX;
 	double scaleY;
 	double scaleZ;
-
 	
-public:
+
 	Keyframes();
 	virtual ~Keyframes();
 };

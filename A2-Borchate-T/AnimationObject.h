@@ -8,13 +8,15 @@ using namespace std;
 #pragma once
 class AnimationObject
 {
-	int objectId;
-	string objectName;
-	std::list<Keyframes> keyFrames;
-
+	
 
 public:
 	AnimationObject();
+	int objectId;
+	string objectName;
+	int keyframeCount;
+	std::list<Keyframes> keyFrames;
+
 	virtual ~AnimationObject();
 };
 
