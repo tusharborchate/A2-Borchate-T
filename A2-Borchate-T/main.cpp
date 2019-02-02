@@ -1,3 +1,4 @@
+//header files
 #include "main.h"
 #include <string>
 #include <iostream>
@@ -9,18 +10,27 @@
 #include <string>
 #include "AnimationObject.h"
 
+//using namespace
 using namespace std;
+
+//global variables
 int objectCount = -1;
 AnimationObject animationObjectList[200];
 string fileName;
 
+//prototype
 void GetInputFile();
 void to_lower(string &s);
 void ProcessFile(string line);
 void to_upper(string &s);
 vector<string>split(string str, char delimiter);
+bool keyframe_compare(Keyframes a, Keyframes b);
+void SortKeyFrames();
+void DisplayValueEachObject();
+void LinearInterpolation();
+double LinearInterpolationProcess(int keyframestart, int keyframelast, double a1, double a2, double a3);
 
-
+//main
 void main(int argc, char* argv[])
 {
 	string line;
@@ -36,24 +46,20 @@ void main(int argc, char* argv[])
 		}
 		myfile.close();
 
-		for (size_t i = 0; i < objectCount; i++)
-		{
-			cout << "Object ID" << animationObjectList[i].objectId;
-			cout << "Object Name" << animationObjectList[i].objectName;
-
-		}
+		LinearInterpolation();
+		DisplayValueEachObject();
 	}
 	else cout << "Unable to open file";
-
-	
 }
 
+//get file path as input
 void GetInputFile()
 {
 	cout << "Enter animation file name with path:";
 	cin >> fileName;
 }
 
+// process all lines
 void ProcessFile(string line)
 {
 	std::locale loc;
@@ -79,7 +85,7 @@ void ProcessFile(string line)
 		while (sep[count] == "")
 		{
 			count = count + 1;
-		}	
+		}
 		k.objectId = stoi(sep[count]);
 		count = count + 1;
 		while (sep[count] == "")
@@ -98,7 +104,7 @@ void ProcessFile(string line)
 		{
 			count = count + 1;
 		}
-	    k.posY = stod(sep[count]);
+		k.posY = stod(sep[count]);
 		count = count + 1;
 		while (sep[count] == "")
 		{
@@ -145,6 +151,7 @@ void ProcessFile(string line)
 		animationObjectList[k.objectId].keyFrames.push_back(k);
 	}
 }
+
 void to_lower(string &s) {
 	for (int i = 0; i < s.length(); i++)
 		if (s[i] >= 'A' and s[i] <= 'Z')
@@ -167,4 +174,102 @@ vector<string> split(string str, char delimiter) {
 	}
 
 	return internal;
+}
+
+bool keyframe_compare(Keyframes a, Keyframes b)
+{
+	if (a.frame_Number < b.frame_Number)
+	{
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+void SortKeyFrames()
+{
+	for (size_t i = 0; i < objectCount; i++)
+	{
+		animationObjectList[objectCount].keyFrames.sort(keyframe_compare);
+	}
+}
+
+//Linear interpolation
+void LinearInterpolation()
+{
+	std::list<Keyframes>::iterator it;
+
+	for (size_t i = 0; i < objectCount; i++)
+	{
+		int count = 0;
+		int framenumber = 0;
+		//sorting the keyframes of all objects
+		(animationObjectList[i].keyFrames).sort(keyframe_compare);
+		for (it = animationObjectList[i].keyFrames.begin(); it != animationObjectList[i].keyFrames.end(); ++it)
+		{
+			if (count == 0)
+			{
+
+				std::list<Keyframes>::iterator iter = animationObjectList[i].keyFrames.end();
+				std::advance(iter, -1);
+			    framenumber = iter->frame_Number;
+			}
+			
+			count = count + 1;	
+			int currentFrameNumber = it->frame_Number;
+
+			if (currentFrameNumber !=framenumber)
+			{
+
+				auto next = std::next(it, 1);
+				int nextFrameNumber = next->frame_Number;
+
+				if (nextFrameNumber != (currentFrameNumber + 1))
+				{
+					int framecount = currentFrameNumber;
+					while (framecount != ((nextFrameNumber)-1))
+					{
+						double posx = it->posX;
+						double nextposx = next->posX;
+
+						Keyframes k;
+						k.frame_Number = framecount + 1;
+						k.objectId = animationObjectList[i].objectId;
+						k.posX = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, posx, nextposx, framecount+1);
+						animationObjectList[i].keyFrames.push_back(k);
+						framecount = framecount + 1;
+					}
+				}
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+
+}
+
+double LinearInterpolationProcess(int keyframestart, int keyframelast, double a1, double a2, double a3)
+{
+	double result = keyframestart + (((keyframelast - keyframestart) / (a2 - a1))*(a3 - a1));
+	return result;
+}
+
+//display values as per object
+void DisplayValueEachObject()
+{
+	std::list<Keyframes>::iterator it;
+
+	for (size_t i = 0; i < objectCount; i++)
+	{
+		cout << "Object ID" << animationObjectList[i].objectId;
+		cout << "Object Name" << animationObjectList[i].objectName;
+		for (it = animationObjectList[i].keyFrames.begin(); it != animationObjectList[i].keyFrames.end(); ++it)
+		{
+			cout << '\n';
+			cout << "keyframe number" << it->frame_Number;
+		}
+	}
 }
