@@ -51,7 +51,12 @@ vector<string>split(string str, char delimiter);
 bool keyframe_compare(Keyframes a, Keyframes b);
 void SortKeyFrames();
 void DisplayValueEachObject();
-void LinearInterpolation();
+Keyframes GetValue(int frameNumber, int objectid);
+int  GetPrevKeyNumber(int frameNumber, int object);
+int  GetNextKeyNumber(int frameNumber, int object);
+
+
+Keyframes LinearInterpolation(int framenumber, int objectid);
 double LinearInterpolationProcess(int keyframestart, int keyframelast, double a1, double a2, double a3);
 
 //main
@@ -79,7 +84,7 @@ void Process()
 
 		try
 		{
-			LinearInterpolation();
+			
 		}
 		catch (const std::exception&)
 		{
@@ -239,68 +244,33 @@ void SortKeyFrames()
 }
 
 //Linear interpolation
-void LinearInterpolation()
+Keyframes LinearInterpolation(int framenumber,int objectid)
 {
-	std::list<Keyframes>::iterator it;
 
-	for (size_t i = 0; i < objectCount; i++)
-	{
-		int count = 0;
-		int framenumber = 0;
-		//sorting the keyframes of all objects
-		(animationObjectList[i].keyFrames).sort(keyframe_compare);
-		for (it = animationObjectList[i].keyFrames.begin(); it != animationObjectList[i].keyFrames.end(); ++it)
-		{
-			if (count == 0)
-			{
+	//get previous key frame number
+	int getprevkey = GetPrevKeyNumber(framenumber, objectid);
+	//get next key frame number
+	int getnextkey = GetNextKeyNumber(framenumber, objectid);
 
-				std::list<Keyframes>::iterator iter = animationObjectList[i].keyFrames.end();
-				std::advance(iter, -1);
-				framenumber = iter->frame_Number;
-			}
 
-			count = count + 1;
-			int currentFrameNumber = it->frame_Number;
 
-			if (currentFrameNumber != framenumber)
-			{
+						Keyframes k=GetValue(getprevkey,objectid);
+						Keyframes key1 = GetValue(getnextkey, objectid);
+						Keyframes knew;
+						knew.posX = LinearInterpolationProcess(getprevkey, getnextkey, k.posX, key1.posX, framenumber);
+						knew.posY = LinearInterpolationProcess(getprevkey, getnextkey, k.posY, key1.posY, framenumber);
+						knew.posZ = LinearInterpolationProcess(getprevkey, getnextkey, k.posZ, key1.posZ, framenumber);
+						knew.scaleX = LinearInterpolationProcess(getprevkey, getnextkey, k.scaleX, key1.scaleX, framenumber);
+						knew.scaleY = LinearInterpolationProcess(getprevkey, getnextkey, k.scaleY, key1.scaleY, framenumber);
+						knew.scaleZ = LinearInterpolationProcess(getprevkey, getnextkey, k.scaleZ, key1.scaleZ, framenumber);
+						knew.rotX = LinearInterpolationProcess(getprevkey, getnextkey, k.rotX, key1.rotX, framenumber);
+						knew.rotY = LinearInterpolationProcess(getprevkey, getnextkey, k.rotY, key1.rotY, framenumber);
+						knew.rotZ = LinearInterpolationProcess(getprevkey, getnextkey, k.rotZ, key1.rotZ, framenumber);
 
-				auto next = std::next(it, 1);
-				int nextFrameNumber = next->frame_Number;
-
-				if (nextFrameNumber != (currentFrameNumber + 1))
-				{
-					int framecount = currentFrameNumber;
-					while (framecount != ((nextFrameNumber)-1))
-					{
-						double posx = it->posX;
-						double nextposx = next->posX;
-
-						Keyframes k;
-						k.frame_Number = framecount + 1;
-						k.objectId = animationObjectList[i].objectId;
-						k.posX = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, posx, nextposx, framecount + 1);
-						k.posY = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, it->posY, next->posY, framecount + 1);
-						k.posZ = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, it->posZ, next->posZ, framecount + 1);
-						k.scaleX = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, it->scaleX, next->scaleX, framecount + 1);
-						k.scaleY = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, it->scaleY, next->scaleY, framecount + 1);
-						k.scaleZ = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, it->scaleZ, next->scaleZ, framecount + 1);
-						k.rotX = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, it->rotX, next->rotX, framecount + 1);
-						k.rotY = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, it->rotY, next->rotY, framecount + 1);
-						k.rotZ = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, it->rotZ, next->rotZ, framecount + 1);
-
-						animationObjectList[i].keyFrames.push_back(k);
-						framecount = framecount + 1;
-					}
-				}
-			}
-			else
-			{
-				break;
-			}
-		}
-	}
-
+						knew.objectId = objectid;
+						k.frame_Number = framenumber;
+						animationObjectList[objectid].keyFrames.push_back(knew);
+						return knew;
 }
 
 double LinearInterpolationProcess(int keyframestart, int keyframelast, double a1, double a2, double a3)
@@ -318,6 +288,19 @@ double LinearInterpolationProcess(int keyframestart, int keyframelast, double a1
 
 }
 
+
+Keyframes GetValue(int frameNumber , int objectid)
+{
+	std::list<Keyframes>::iterator it;
+	int foundprevframe = 0;
+	for (it = animationObjectList[objectid].keyFrames.begin(); it != animationObjectList[objectid].keyFrames.end(); ++it)
+	{
+		if (frameNumber == it->frame_Number)
+		{
+			return  (*it);
+		}
+	}
+}
 //display values as per object
 void DisplayValueEachObject()
 {
@@ -341,6 +324,33 @@ void DisplayValueEachObject()
 	cout << largest;
 }
 
+int  GetPrevKeyNumber(int frameNumber,int object)
+{
+	std::list<Keyframes>::iterator it;
+	int foundprevframe = 0;
+	for (it = animationObjectList[object].keyFrames.begin(); it != animationObjectList[object].keyFrames.end(); ++it)
+	{
+		if (frameNumber < it->frame_Number)
+		{
+			return foundprevframe;
+		}
+		foundprevframe = it->frame_Number;
+	}
+}
+
+int  GetNextKeyNumber(int frameNumber, int object)
+{
+	std::list<Keyframes>::iterator it;
+	int foundnextframe = 0;
+	for (it = animationObjectList[object].keyFrames.begin(); it != animationObjectList[object].keyFrames.end(); ++it)
+	{
+		if (frameNumber < it->frame_Number)
+		{
+			foundnextframe= it->frame_Number;
+		}
+		return foundnextframe;
+	}
+}
 
 
 int main(int argc, char* argv[])
@@ -407,7 +417,7 @@ void reshape(int w, int h)
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(60.0, (GLdouble)w / (GLdouble)h, 0.1, 1000.0);
+	gluPerspective(60.0, (GLdouble)w / (GLdouble)h,1.0, 1000.0);
 	glMatrixMode(GL_MODELVIEW);
 
 	glutPostRedisplay();
@@ -420,68 +430,40 @@ void display()
 
 	glLoadIdentity();
 
-	// display positive X, Y, and Z axes near origin
-	glBegin(GL_LINES);
-	glColor3d(1.0, 0.0, 0.0);
-	glVertex3d(0.0, 0.0, 0.0);
-	glVertex3d(2.0, 0.0, 0.0);
-	glColor3d(0.0, 1.0, 0.0);
-	glVertex3d(0.0, 0.0, 0.0);
-	glVertex3d(0.0, 2.0, 0.0);
-	glColor3d(0.0, 0.0, 1.0);
-	glVertex3d(0.0, 0.0, 0.0);
-	glVertex3d(0.0, 0.0, 2.0);
-	glEnd();
-
-	// draw a purple wireframe cube
-	glColor3d(1.0, 0.0, 1.0);
-
-	glPushMatrix();
-	glTranslated(0.0, 0.0, 0.0);
-	glRotated(45, 0.0, 1.0, 0.0);
-	glScaled(1.0, 1.0, 1.0);
-	glutWireCube(1.0);
-	glPopMatrix();
-
-	if (frames < animationObjectList[0].keyFrames.size())
+	//for all frames
+	for (size_t f = 0; f < 50; f++)
 	{
-		// Create iterator pointing to first element
-		std::list<Keyframes>::iterator it;
-		it = animationObjectList[0].keyFrames.begin();
-		// Advance the iterator by 2 positions,
-		std::advance(it, frames);
-
-		for (size_t i = 0; i < 1; i++)
+		//for all objects
+		Keyframes k;
+		for (size_t o = 0; o < objectCount; o++)
 		{
-			glPushMatrix();
-			gluLookAt(7,50,0,
-				(it->posX) / 2, (it->posY) / 2, (it->posZ) / 2,
-				0.0, 1.0, 0.0);
+			spiky.load(animationObjectList[o].objectName);
+			 k = LinearInterpolation(f,animationObjectList[o].objectId);
+			 glPushMatrix();
+			 gluLookAt(7, 100, 7,
+				 (k.posX) / 2, (k.posY) / 2, (k.posZ) / 2,
+				 0.0, 1.0, 0.0);
 
-					//	glScaled(it->scaleX, it->scaleY, it->scaleZ);
+			 //glScaled(it->scaleX, it->scaleY, it->scaleZ);
 
-			/*glRotated(it->posZ, 0, 0, 1);
+				 /*glRotated(it->posZ, 0, 0, 1);
 
-			glRotated(it->posY, 0, 1, 0);
+				 glRotated(it->posY, 0, 1, 0);
 
-			glRotated(it->posX, 1, 0, 0);  */         
-			glTranslated(it->posX, it->posY, it->posZ);
+				 glRotated(it->posX, 1, 0, 0);  */
+			 glTranslated(k.posX,k.posY,k.posZ);
 
-			spiky.draw();
-			glPopMatrix();
+			 spiky.draw();
+			 glPopMatrix();	
+
 		}
+		glutSwapBuffers();
+
 	}
-	for (size_t i = 0; i < 50; i++)
-	{
-		glPushMatrix();
-		glTranslated(-1.0 - i, 0.0, 0.0);
-		glScaled(0.005, 0.005, 0.005);
-
-		bucketlist.draw();
-		glPopMatrix();
-	}
+	
 
 
-	glPopMatrix();
-	glutSwapBuffers();
+	
+
+
 }
