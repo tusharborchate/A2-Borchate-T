@@ -15,7 +15,7 @@ public:
 	double scaleX;
 	double scaleY;
 	double scaleZ;
-	
+	double time;
 
 	Keyframes();
 	virtual ~Keyframes();

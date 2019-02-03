@@ -54,7 +54,10 @@ void DisplayValueEachObject();
 Keyframes GetValue(int frameNumber, int objectid);
 int  GetPrevKeyNumber(int frameNumber, int object);
 int  GetNextKeyNumber(int frameNumber, int object);
-
+void GetLargestKeyframe();
+bool updateListElement(int f, double time, int objectid);
+bool KeyframeExist(int f, int objectid);
+Keyframes GetKeyframe(int f, int objectid);
 
 Keyframes LinearInterpolation(int framenumber, int objectid);
 double LinearInterpolationProcess(int keyframestart, int keyframelast, double a1, double a2, double a3);
@@ -73,6 +76,7 @@ void Process()
 		{
 			try
 			{
+				//step 1 read file and store data in list
 				ProcessFile(line);
 			}
 			catch (const std::exception&)
@@ -109,6 +113,7 @@ void ProcessFile(string line)
 	std::locale loc;
 	to_lower(line);
 
+	//if line contains object then store in object
 	size_t found = line.find("object");
 	if (found != string::npos)
 	{
@@ -120,6 +125,8 @@ void ProcessFile(string line)
 			animationObjectList[objectCount].objectName = sep[2];
 		}
 	}
+
+	//if line contains keyframe then store in keyframe
 	found = line.find("keyframe");
 	if (found != string::npos)
 	{
@@ -252,10 +259,14 @@ Keyframes LinearInterpolation(int framenumber,int objectid)
 	//get next key frame number
 	int getnextkey = GetNextKeyNumber(framenumber, objectid);
 
-
-
+	
+	                        //get previous frame keyframe and attributes
 						Keyframes k=GetValue(getprevkey,objectid);
+						
+						//get next frame keyframe and attributes
 						Keyframes key1 = GetValue(getnextkey, objectid);
+						
+						//get keyframe for new framenumber by linear interpolation process
 						Keyframes knew;
 						knew.posX = LinearInterpolationProcess(getprevkey, getnextkey, k.posX, key1.posX, framenumber);
 						knew.posY = LinearInterpolationProcess(getprevkey, getnextkey, k.posY, key1.posY, framenumber);
@@ -268,7 +279,7 @@ Keyframes LinearInterpolation(int framenumber,int objectid)
 						knew.rotZ = LinearInterpolationProcess(getprevkey, getnextkey, k.rotZ, key1.rotZ, framenumber);
 
 						knew.objectId = objectid;
-						k.frame_Number = framenumber;
+						knew.frame_Number = framenumber;
 						animationObjectList[objectid].keyFrames.push_back(knew);
 						return knew;
 }
@@ -287,7 +298,6 @@ double LinearInterpolationProcess(int keyframestart, int keyframelast, double a1
 	}
 
 }
-
 
 Keyframes GetValue(int frameNumber , int objectid)
 {
@@ -347,15 +357,94 @@ int  GetNextKeyNumber(int frameNumber, int object)
 		if (frameNumber < it->frame_Number)
 		{
 			foundnextframe= it->frame_Number;
+			return foundnextframe;
+
 		}
-		return foundnextframe;
+	}	
+	return foundnextframe;
+
+}
+
+void GetLargestKeyframe()
+{
+
+
+	for (size_t i = 0; i < objectCount; i++)
+	{
+	std::list<Keyframes>::iterator iter = animationObjectList[i].keyFrames.end();
+	std::advance(iter, -1);
+	animationObjectList[i].highest = iter->frame_Number;
+	iter = animationObjectList[i].keyFrames.begin();
+	std::advance(iter, 0);
+	animationObjectList[i].lowest = iter->frame_Number;
+	}
+}
+
+bool updateListElement(int f,double time,int objectid)
+{
+	
+	double prevtime=0;
+
+	std::list<Keyframes>::iterator it;
+	for (it = animationObjectList[objectid].keyFrames.begin(); it != animationObjectList[objectid].keyFrames.end(); ++it)
+	{
+		
+		Keyframes temp = *it;
+		if (temp.frame_Number == f - 1)
+		{
+			prevtime = it->time;
+		}
+		if (temp.frame_Number == f)
+		{
+			temp.time =  prevtime+time;
+			it->time = prevtime + time;
+			return true;
+		}
+	}
+	return false;
+}
+
+Keyframes GetKeyframe(int f, int objectid)
+{
+
+	Keyframes k;
+	std::list<Keyframes>::iterator it;
+	for (it = animationObjectList[objectid].keyFrames.begin(); it != animationObjectList[objectid].keyFrames.end(); ++it)
+	{
+
+		k = *it;
+		if (it->frame_Number == f)
+		{
+			return k;
+		}
 	}
 }
 
 
+bool KeyframeExist(int f, int objectid)
+{
+
+
+	std::list<Keyframes>::iterator it;
+	for (it = animationObjectList[objectid].keyFrames.begin(); it != animationObjectList[objectid].keyFrames.end(); ++it)
+	{
+
+		
+		if (it->frame_Number == f)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 int main(int argc, char* argv[])
 {
 	Process();
+	//step 2 sort all keyframes by ascending order
+	SortKeyFrames();
+	//get largest and smallest keyframe for each object
+	GetLargestKeyframe();
 	glutInitWindowSize(1024, 768);
 	glutInitWindowPosition(0, 0);
 
@@ -431,31 +520,66 @@ void display()
 	glLoadIdentity();
 
 	//for all frames
-	for (size_t f = 0; f < 50; f++)
+	for (size_t f = 0; f < largest; f++)
 	{
 		//for all objects
 		Keyframes k;
+
 		for (size_t o = 0; o < objectCount; o++)
-		{
+		{	 
+			//get time for each object for each frame
+			double prevtime = glutGet(GLUT_ELAPSED_TIME);
+
 			spiky.load(animationObjectList[o].objectName);
-			 k = LinearInterpolation(f,animationObjectList[o].objectId);
-			 glPushMatrix();
-			 gluLookAt(7, 100, 7,
-				 (k.posX) / 2, (k.posY) / 2, (k.posZ) / 2,
-				 0.0, 1.0, 0.0);
 
-			 //glScaled(it->scaleX, it->scaleY, it->scaleZ);
+			//if object largest frame is smaller than current frame
+			if (animationObjectList[o].highest < f)
+			{
+				cout << '\n';
+				cout << "frame number" << f;
+				cout << '\n';
+				cout << "object id :" << animationObjectList[o].objectId;
+				cout << '\n';
+				cout << "object does not exist";
+			}
+			else {
+				if (!KeyframeExist(f, o))
+				{
+					//if current frame not exist then linear interpolation
+					k = LinearInterpolation(f, animationObjectList[o].objectId);
+				}
+				else {
+					k = GetKeyframe(f, o);
+				}
+				//draw object
+				glPushMatrix();
+				gluLookAt(7, 100, 7,
+					(k.posX) / 2, (k.posY) / 2, (k.posZ) / 2,
+					0.0, 1.0, 0.0);
 
-				 /*glRotated(it->posZ, 0, 0, 1);
+				glScaled(k.scaleX, k.scaleY, k.scaleZ);
 
-				 glRotated(it->posY, 0, 1, 0);
+				glRotated(k.rotZ, 0, 0, 1);
 
-				 glRotated(it->posX, 1, 0, 0);  */
-			 glTranslated(k.posX,k.posY,k.posZ);
+				glRotated(k.rotX, 0, 1, 0);
 
-			 spiky.draw();
-			 glPopMatrix();	
+				glRotated(k.posX, 1, 0, 0);
+				glTranslated(k.posX, k.posY, k.posZ);
 
+				spiky.draw();
+				glPopMatrix();
+			
+				//object draw complete
+
+				double time = glutGet(GLUT_ELAPSED_TIME);
+				double timediff = time - prevtime;
+				k.time = timediff;
+				k.frame_Number = f;
+
+				//get previous keyframe time and current keyframe time and update time
+				updateListElement(f,timediff, o);
+			}
+			
 		}
 		glutSwapBuffers();
 
