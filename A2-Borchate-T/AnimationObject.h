@@ -17,6 +17,7 @@ public:
 	int keyframeCount;
 	int lowest;
 	int highest;
+	bool notExist;
 	std::list<Keyframes> keyFrames;
 
 	virtual ~AnimationObject();
