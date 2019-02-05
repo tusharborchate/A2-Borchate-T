@@ -355,10 +355,7 @@ void LinearInterpolationGetAllFrames()
 						k.rotZ = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, it->rotZ, next->rotZ, framecount + 1);
 						animationObjectList[i].keyFrames.push_back(k);
 						framecount = framecount + 1;
-						if (framecount == 195)
-						{
-							cout << framecount;
-						}
+						
 					}
 				}
 			}
