@@ -38,7 +38,8 @@ ObjModel ladybug;
 ObjModel spider;
 DisplayList ladybuglist;
 DisplayList spiderlist;
-
+bool changecamera = false;
+double value = 0.0;
 //prototype
 void init();
 void initDisplay();
@@ -168,67 +169,73 @@ void ProcessFile(string line)
 				count = count + 1;
 			}
 			k.frame_Number = stoi(sep[count]);
-			if (k.frame_Number > largest)
+			if (KeyframeExist(k.frame_Number,k.objectId))
 			{
-				largest = k.frame_Number;
+				cout << "This frame is already exist :" << k.frame_Number;
 			}
-			count = count + 1;
+			else {
+				if (k.frame_Number > largest)
+				{
+					largest = k.frame_Number;
+				}
+				count = count + 1;
 
-			while (sep[count] == "")
-			{
+				while (sep[count] == "")
+				{
+					count = count + 1;
+				}
+				k.posX = stod(sep[count]);
 				count = count + 1;
-			}
-			k.posX = stod(sep[count]);
-			count = count + 1;
-			while (sep[count] == "")
-			{
+				while (sep[count] == "")
+				{
+					count = count + 1;
+				}
+				k.posY = stod(sep[count]);
 				count = count + 1;
-			}
-			k.posY = stod(sep[count]);
-			count = count + 1;
-			while (sep[count] == "")
-			{
+				while (sep[count] == "")
+				{
+					count = count + 1;
+				}
+				k.posZ = stod(sep[count]);
 				count = count + 1;
-			}
-			k.posZ = stod(sep[count]);
-			count = count + 1;
-			while (sep[count] == "")
-			{
+				while (sep[count] == "")
+				{
+					count = count + 1;
+				}
+				k.rotX = stod(sep[count]);
 				count = count + 1;
-			}
-			k.rotX = stod(sep[count]);
-			count = count + 1;
-			while (sep[count] == "")
-			{
+				while (sep[count] == "")
+				{
+					count = count + 1;
+				}
+				k.rotY = stod(sep[count]);
 				count = count + 1;
-			}
-			k.rotY = stod(sep[count]);
-			count = count + 1;
-			while (sep[count] == "")
-			{
+				while (sep[count] == "")
+				{
+					count = count + 1;
+				}
+				k.rotZ = stod(sep[count]);
 				count = count + 1;
-			}
-			k.rotZ = stod(sep[count]);
-			count = count + 1;
-			while (sep[count] == "")
-			{
+				while (sep[count] == "")
+				{
+					count = count + 1;
+				}
+				k.scaleX = stod(sep[count]);
 				count = count + 1;
-			}
-			k.scaleX = stod(sep[count]);
-			count = count + 1;
-			while (sep[count] == "")
-			{
+				while (sep[count] == "")
+				{
+					count = count + 1;
+				}
+				k.scaleY = stod(sep[count]);
 				count = count + 1;
+				while (sep[count] == "")
+				{
+					count = count + 1;
+				}
+				k.scaleZ = stod(sep[count]);
+				animationObjectList[isExist].keyframeCount = animationObjectList[k.objectId].keyframeCount + 1;
+				animationObjectList[isExist].keyFrames.push_back(k);
 			}
-			k.scaleY = stod(sep[count]);
-			count = count + 1;
-			while (sep[count] == "")
-			{
-				count = count + 1;
-			}
-			k.scaleZ = stod(sep[count]);
-			animationObjectList[isExist].keyframeCount = animationObjectList[k.objectId].keyframeCount + 1;
-			animationObjectList[isExist].keyFrames.push_back(k);
 		}
 		else {
 			cout << "test keyframes for non existent object";
@@ -619,13 +626,21 @@ bool KeyframeExist(int f, int objectid)
 
 
 	std::list<Keyframes>::iterator it;
-	for (it = animationObjectList[objectid].keyFrames.begin(); it != animationObjectList[objectid].keyFrames.end(); ++it)
+	for (size_t i = 0; i <= objectCount; i++)
 	{
 
-
-		if (it->frame_Number == f)
+		if (animationObjectList[i].objectId != objectid)
 		{
-			return true;
+			continue;
+		}
+		for (it = animationObjectList[i].keyFrames.begin(); it != animationObjectList[i].keyFrames.end(); ++it)
+		{
+
+
+			if (it->frame_Number == f)
+			{
+				return true;
+			}
 		}
 	}
 	return false;
@@ -700,15 +715,29 @@ void special(int special_key, int x, int y)
 		restartf1 = true;
 		objectCount = 1;
 		break;
+
+	case GLUT_KEY_F3:
+
+		changecamera = true;
+		
+		break;
+	case GLUT_KEY_LEFT:
+
+		value = value + 1;
+
+		break;
 	}
 }
 
 void update()
 {
 	// update your variables here
-	sleep(1.5 / 60.0);
+	sleep(1 / 60.0);
 	frames = frames + 1;
-
+	if (changecamera)
+	{
+		value = value + 1;
+	}
 	glutPostRedisplay();
 }
 
@@ -849,3 +878,4 @@ void display()
 
 
 }
+
