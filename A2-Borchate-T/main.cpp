@@ -40,6 +40,10 @@ DisplayList ladybuglist;
 DisplayList spiderlist;
 bool changecamera = false;
 double value = 0.0;
+bool customanimation = false;
+double x = 7.0;
+double y = 100.0;
+double z=7.0;
 //prototype
 void init();
 void initDisplay();
@@ -58,7 +62,7 @@ bool keyframe_compare(Keyframes a, Keyframes b);
 void SortKeyFrames();
 void DisplayValueEachObject();
 void DisplayValueEachFrame();
-
+void CustomanimationProcess();
 Keyframes GetValue(int frameNumber, int objectid);
 int  GetPrevKeyNumber(int frameNumber, int object);
 int  GetNextKeyNumber(int frameNumber, int object);
@@ -71,6 +75,8 @@ Keyframes LinearInterpolation(int framenumber, int objectid);
 double LinearInterpolationProcess(int keyframestart, int keyframelast, double a1, double a2, int framenumber);
 int Check_ObjectExist(int objectid);
 void LinearInterpolationGetAllFrames();
+
+string error = "";
 
 //main
 void Process()
@@ -112,11 +118,35 @@ void Process()
 
 }
 
+void CustomAnimationProcess()
+{
+	if (customanimation == true)
+	{
+	x = 0;
+		y = 100;
+		z = 2;
+	}
+	else {
+		x = 7.0;
+		y = 100.0;
+		z = 7.0;
+	}
+	
+}
+
 //get file path as input
 void GetInputFile()
 {
 	cout << "Enter animation file name with path:";
 	cin >> fileName;
+	to_lower(fileName);
+	size_t found = fileName.find("customanimation");
+	if (found != string::npos)
+	{
+		customanimation = true;
+	}
+
+	CustomAnimationProcess();
 }
 
 // process all lines
@@ -169,9 +199,10 @@ void ProcessFile(string line)
 				count = count + 1;
 			}
 			k.frame_Number = stoi(sep[count]);
-			if (KeyframeExist(k.frame_Number,k.objectId))
+			if (k.frame_Number<= animationObjectList[isExist].highest  && animationObjectList[isExist].keyFrames.size()>0)
 			{
-				cout << "This frame is already exist :" << k.frame_Number;
+				error = "time for a key frame is less than or equal to the time for the previous key frame for the same object.";
+				cout << "time for a key frame is less than the time for the previous key frame for the same object - " << k.frame_Number;
 			}
 			else {
 				if (k.frame_Number > largest)
@@ -233,11 +264,14 @@ void ProcessFile(string line)
 					count = count + 1;
 				}
 				k.scaleZ = stod(sep[count]);
+				animationObjectList[isExist].highest = k.frame_Number;
 				animationObjectList[isExist].keyframeCount = animationObjectList[k.objectId].keyframeCount + 1;
 				animationObjectList[isExist].keyFrames.push_back(k);
 			}
+		
 		}
 		else {
+			error = "test keyframes for non existent object";
 			cout << "test keyframes for non existent object";
 			animationObjectList[objectCount].notExist = true;
 		}
@@ -414,11 +448,7 @@ Keyframes LinearInterpolation(int framenumber, int objectid)
 double LinearInterpolationProcess(int keyframestart, int keyframelast, double a1, double a2, int framenumber)
 {
 	try {
-		if (a2 - a1 == 0)
-		{
-			int diff = framenumber - keyframestart;
-			return  a1 + (diff / 1000) + 0.01;
-		}
+		
 		double result = a1 + (((a2 - a1) / (keyframelast - keyframestart))*(framenumber - keyframestart));
 		if (!std::isfinite(result)) {
 			return 0;
@@ -758,7 +788,7 @@ void display()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-	if (frames < largest + 5)
+	if (frames < largest + 2)
 	{
 		//for all frames
 		for (size_t f = frames; f <= frames; f++)
@@ -771,7 +801,7 @@ void display()
 			Keyframes k;
 			glLoadIdentity();
 
-			gluLookAt(7.0, 100.0, 7.0,
+			gluLookAt(x, y, z,
 				0.0, 0.0, 0.0,
 				0.0, 1.0, 0.0);
 
@@ -868,12 +898,24 @@ void display()
 
 
 			}
+			
 			glutSwapBuffers();
 
 		}
+			
 
 
-
+	}
+	else {
+		int i = 0;
+		while (i == 0)
+		{
+			cout << "\n";
+			cout << "\n";
+			cout << error;
+			error = "";
+			i = i + 1;
+		}
 	}
 
 
