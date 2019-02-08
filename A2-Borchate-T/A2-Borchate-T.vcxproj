@@ -184,6 +184,7 @@
     <Library Include="freeglut.lib" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="C:\Users\TUSHAR\Downloads\dark_fighter (2)\DFMaterial.mtl" />
     <None Include="freeglut.dll" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

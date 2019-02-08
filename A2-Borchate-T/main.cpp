@@ -33,7 +33,7 @@ bool restartf1 = false;
 bool restartf2 = false;
 
 int frames = 0;
-
+int oldobjectcount = 0;
 ObjModel ladybug;
 ObjModel spider;
 DisplayList ladybuglist;
@@ -41,9 +41,9 @@ DisplayList spiderlist;
 bool changecamera = false;
 double value = 0.0;
 bool customanimation = false;
-double x = 7.0;
-double y = 100.0;
-double z=7.0;
+double camx = 7.0;
+double camy = 100.0;
+double camz=7.0;
 //prototype
 void init();
 void initDisplay();
@@ -122,14 +122,14 @@ void CustomAnimationProcess()
 {
 	if (customanimation == true)
 	{
-	x = 0;
-		y = 100;
-		z = 2;
+	camx = 0;
+		camy = 100;
+		camz = 2;
 	}
 	else {
-		x = 7.0;
-		y = 100.0;
-		z = 7.0;
+		camx = 7.0;
+		camy = 100.0;
+		camz = 7.0;
 	}
 	
 }
@@ -737,25 +737,49 @@ void special(int special_key, int x, int y)
 	case GLUT_KEY_F1:
 		frames = 0;
 		restartf1 = true;
-		objectCount = 0;
+		oldobjectcount = objectCount;
+		objectCount = objectCount - oldobjectcount + 1; 
+		if (customanimation)
+		{
+			camx =0 ;
+			camy = 100;
+			camz = 2;
+
+		}
+		
 		break;
 
 	case GLUT_KEY_F2:
 
 		restartf1 = true;
-		objectCount = 1;
+		oldobjectcount = objectCount;	
+		objectCount = oldobjectcount - oldobjectcount + 2;
+		if (customanimation)
+		{
+			camx = 0;
+			camy = 100;
+			camz = 2;
+
+		}
 		break;
+
 
 	case GLUT_KEY_F3:
 
-		changecamera = true;
+		if (customanimation)
+		{
+			camx = 0;
+			camy = 100;
+			camz = 2;
+		}
+		restartf1= true;
+		oldobjectcount = objectCount;
+		frames = 0;
+
+		break;
 		
-		break;
-	case GLUT_KEY_LEFT:
-
-		value = value + 1;
-
-		break;
+		
+	
 	}
 }
 
@@ -764,10 +788,7 @@ void update()
 	// update your variables here
 	sleep(1 / 60.0);
 	frames = frames + 1;
-	if (changecamera)
-	{
-		value = value + 1;
-	}
+	
 	glutPostRedisplay();
 }
 
@@ -793,6 +814,19 @@ void display()
 		//for all frames
 		for (size_t f = frames; f <= frames; f++)
 		{
+			if (f > 120 && customanimation == true)
+			{
+				camx = camx+1;
+				camy = camy+5;
+				camz = camz+1;
+			}
+			if (f > 180 && customanimation == true)
+			{
+				camx = camx-1;
+				camy = camx-5;
+				camz = camz-10;
+				
+			}
 			cout << "\n";
 			cout << "---------------------------------------------";
 			cout << "\n";
@@ -801,7 +835,7 @@ void display()
 			Keyframes k;
 			glLoadIdentity();
 
-			gluLookAt(x, y, z,
+			gluLookAt(camx, camy, camz,
 				0.0, 0.0, 0.0,
 				0.0, 1.0, 0.0);
 

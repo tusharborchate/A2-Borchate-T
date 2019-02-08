@@ -1,0 +1,5 @@
+newmtl DarkFighter
+illum 0
+Kd 1.0 1.0 1.0
+map_Kd dark_fighter_color.bmp
+
