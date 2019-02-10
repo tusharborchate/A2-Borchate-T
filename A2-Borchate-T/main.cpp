@@ -43,7 +43,7 @@ double value = 0.0;
 bool customanimation = false;
 double camx = 7.0;
 double camy = 100.0;
-double camz=7.0;
+double camz = 7.0;
 //prototype
 void init();
 void initDisplay();
@@ -70,7 +70,7 @@ void GetLargestKeyframe();
 bool updateListElement(int f, double time, int objectid);
 bool KeyframeExist(int f, int objectid);
 Keyframes GetKeyframe(int f, int objectid);
-
+void DisplayBeforeValueEachObject();
 Keyframes LinearInterpolation(int framenumber, int objectid);
 double LinearInterpolationProcess(int keyframestart, int keyframelast, double a1, double a2, int framenumber);
 int Check_ObjectExist(int objectid);
@@ -105,7 +105,11 @@ void Process()
 
 		try
 		{
+			//before keyframe started
+			DisplayBeforeValueEachObject();
+			//read all values for each keyframe 
 			LinearInterpolationGetAllFrames();
+			//display value for each object
 			DisplayValueEachObject();
 		}
 		catch (const std::exception&)
@@ -122,16 +126,16 @@ void CustomAnimationProcess()
 {
 	if (customanimation == true)
 	{
-	camx = 0;
-		camy = 100;
-		camz = 2;
+		camx = 0;
+		camy = 100.0;
+		camz = 2.0;
 	}
 	else {
 		camx = 7.0;
 		camy = 100.0;
 		camz = 7.0;
 	}
-	
+
 }
 
 //get file path as input
@@ -199,7 +203,7 @@ void ProcessFile(string line)
 				count = count + 1;
 			}
 			k.frame_Number = stoi(sep[count]);
-			if (k.frame_Number<= animationObjectList[isExist].highest  && animationObjectList[isExist].keyFrames.size()>0)
+			if (k.frame_Number <= animationObjectList[isExist].highest  && animationObjectList[isExist].keyFrames.size() > 0)
 			{
 				error = "time for a key frame is less than or equal to the time for the previous key frame for the same object.";
 				cout << "time for a key frame is less than the time for the previous key frame for the same object - " << k.frame_Number;
@@ -268,7 +272,7 @@ void ProcessFile(string line)
 				animationObjectList[isExist].keyframeCount = animationObjectList[k.objectId].keyframeCount + 1;
 				animationObjectList[isExist].keyFrames.push_back(k);
 			}
-		
+
 		}
 		else {
 			error = "test keyframes for non existent object";
@@ -373,12 +377,12 @@ void LinearInterpolationGetAllFrames()
 
 				if (nextFrameNumber != (currentFrameNumber + 1))
 				{
-					
+
 					int framecount = currentFrameNumber;
 					while (framecount != ((nextFrameNumber)-1))
 					{
-						
-				
+
+
 						double posx = it->posX;
 						double nextposx = next->posX;
 
@@ -396,7 +400,7 @@ void LinearInterpolationGetAllFrames()
 						k.rotZ = LinearInterpolationProcess(currentFrameNumber, nextFrameNumber, it->rotZ, next->rotZ, framecount + 1);
 						animationObjectList[i].keyFrames.push_back(k);
 						framecount = framecount + 1;
-						
+
 					}
 				}
 			}
@@ -448,7 +452,7 @@ Keyframes LinearInterpolation(int framenumber, int objectid)
 double LinearInterpolationProcess(int keyframestart, int keyframelast, double a1, double a2, int framenumber)
 {
 	try {
-		
+
 		double result = a1 + (((a2 - a1) / (keyframelast - keyframestart))*(framenumber - keyframestart));
 		if (!std::isfinite(result)) {
 			return 0;
@@ -522,6 +526,41 @@ void DisplayValueEachObject()
 	}
 
 }
+
+void DisplayBeforeValueEachObject()
+{
+
+	for (size_t i = 0; i <= objectCount; i++)
+	{
+		if (animationObjectList[i].notExist == false)
+		{
+			cout << "\n";
+			cout << "---------------------------------------------";
+			cout << "\n";
+			cout << "keyframe number N/A";
+			cout << "\n";
+			cout << "---------------------------------------------";
+
+			cout << "\n";
+			cout << "---------------------------------------------";
+
+			cout << "Object ID" << animationObjectList[i].objectId;
+			cout << "\n";
+
+			cout << "Object Name" << animationObjectList[i].objectName;
+			cout << "\n";
+
+
+			cout << "---------------------------------------------";
+			cout << "\n";
+			cout << "Object does not exist";
+			cout << "\n";
+
+		}
+	}
+
+}
+
 
 void DisplayValueEachFrame()
 {
@@ -738,21 +777,21 @@ void special(int special_key, int x, int y)
 		frames = 0;
 		restartf1 = true;
 		oldobjectcount = objectCount;
-		objectCount = objectCount - oldobjectcount + 1; 
+		objectCount = objectCount - oldobjectcount + 1;
 		if (customanimation)
 		{
-			camx =0 ;
+			camx = 0;
 			camy = 100;
 			camz = 2;
 
 		}
-		
+
 		break;
 
 	case GLUT_KEY_F2:
 
 		restartf1 = true;
-		oldobjectcount = objectCount;	
+		oldobjectcount = objectCount;
 		objectCount = oldobjectcount - oldobjectcount + 2;
 		if (customanimation)
 		{
@@ -772,14 +811,14 @@ void special(int special_key, int x, int y)
 			camy = 100;
 			camz = 2;
 		}
-		restartf1= true;
+		restartf1 = true;
 		oldobjectcount = objectCount;
 		frames = 0;
 
 		break;
-		
-		
-	
+
+
+
 	}
 }
 
@@ -788,7 +827,7 @@ void update()
 	// update your variables here
 	sleep(1 / 60.0);
 	frames = frames + 1;
-	
+
 	glutPostRedisplay();
 }
 
@@ -809,23 +848,23 @@ void display()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-	if (frames < largest + 2)
+	if (frames < largest + 5)
 	{
 		//for all frames
 		for (size_t f = frames; f <= frames; f++)
 		{
-			if (f > 120 && customanimation == true)
+			if (f > 80 && customanimation == true && restartf1 == true)
 			{
-				camx = camx+1;
-				camy = camy+5;
-				camz = camz+1;
+				camx = camx + 1;
+				camy = camy + 5;
+				camz = camz + 1;
 			}
-			if (f > 180 && customanimation == true)
+			if (f > 120 && customanimation == true && restartf1 == true)
 			{
-				camx = camx-1;
-				camy = camx-5;
-				camz = camz-10;
-				
+				camx = camx - 1;
+				camy = camx - 15;
+				camz = camz - 10;
+
 			}
 			cout << "\n";
 			cout << "---------------------------------------------";
@@ -862,7 +901,7 @@ void display()
 
 
 					//if object largest frame is smaller than current frame
-					if (size <= frames )
+					if (size <= frames)
 					{
 						cout << "\n";
 						cout << "---------------------------------------------";
@@ -870,14 +909,6 @@ void display()
 						cout << "object does not exist";
 					}
 					else {
-						//if (!KeyframeExist(f, o))
-						//{
-						//	//if current frame not exist then linear interpolation
-						////	k = LinearInterpolation(f, animationObjectList[o].objectId);
-						//}
-						//else {
-						//	
-						//}
 
 						k = GetKeyframe(f, o);
 						//draw object
@@ -917,26 +948,17 @@ void display()
 						glPopMatrix();
 
 
-						//object draw complete
-
-						//double time = glutGet(GLUT_ELAPSED_TIME);
-						//double timediff = time - prevtime;
-						//k.time = timediff;
-						//k.frame_Number = f;
-
-						////get previous keyframe time and current keyframe time and update time
-						//updateListElement(f, timediff, o);
 					}
 
 				}
 
 
 			}
-			
+
 			glutSwapBuffers();
 
 		}
-			
+
 
 
 	}

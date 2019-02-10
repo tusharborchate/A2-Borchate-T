@@ -1,0 +1,43 @@
+Creative animation
+
+
+to run creative animation you give customanimation.txt  as input file
+
+1. There are three functionalities as a creative animation.
+
+2. If you press f1 then only first two object will start the animation.
+
+3. If you press f2 then all objects will start the animation.
+
+4. If you press f3 then all objects will start animation + camera position get changed.
+
+I am counting frames for per update and after then reading all keyframes its stop.
+I have created special function of opengl to handle keyboard functionality.
+if you press f1 frames counter gets 0 and animation starts again but I put constraint that only first two objects will show animation.
+
+if you press f2 frames counter gets 0 and animation starts again but I put constraint that only first three objects will show animation.
+
+if you press f3 frames counter gets 0 and animation starts again and all objects wil show animation. The camera will also changes its position.
+
+//for all frames
+		for (size_t f = frames; f <= frames; f++)
+		{
+			if (f > 80 && customanimation == true && restartf1 == true)
+			{
+				camx = camx + 1;
+				camy = camy + 5;
+				camz = camz + 1;
+			}
+			if (f > 120 && customanimation == true && restartf1 == true)
+			{
+				camx = camx - 1;
+				camy = camx - 15;
+				camz = camz - 10;
+
+			}
+			
+			Please check this code in display method.
+			
+			
+
+Thanks. :)

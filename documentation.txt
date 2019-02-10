@@ -1,0 +1,58 @@
+
+Tushar Borchate
+200393116
+
+This assignment has been developed in c++ language.
+The program is well commented.
+
+Requirement 1 :
+
+for each object display the variables before each keyframe and after each keyframe
+
+ I made DisplayValueEachObject method which will print all the objects with values which has keyframes.
+ 
+I have performed linear interpolation while reading the file and storing values in array.
+
+To show values before keyframe started I made DisplayBeforeValueEachObject method.
+
+Requirement 2:
+
+if current keyframe number is largest than the largest keyframe of current object then I am showing object does not exist. Please check display method
+
+Requirement 3:
+
+You can give path to the application such as F:\Tushar\Animation\animation.txt
+and you will see console displays the values and after animation will start.
+
+Requirement 4:
+
+For custom animation I have attached file Customanimation.txt. Please use it as input file to show customanimation.
+
+Requirement 5:
+
+I have handle errors as follows :
+
+error 1: object ids in any order :
+
+I am reading all the objects and giving them a unique Id in for loop. Hence it doesn't matter in which order they come.
+
+error 2: keyframes for single object not together
+
+I am reading all keyframes after all objects hence when keyframe reading started if keyframe belongs to object 1
+ then I add it to the object where object id is 1 . 
+ 
+error 3:  error if a time for a key frame is less than 
+
+I am reading keyframes as specified in txt file. IF keyframe number for given object is
+ larger than the current largest keyframe then I am printing the message. Please check processfile method.
+I am also ignoring that keyframe.
+
+error 4: Report an error if a key frame refers to a missing object.
+
+I am checking if object exist while reading keyframe.
+
+
+Please contact me if you find difficulty to run the program.
+ 
+
+ 
